@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace WebAPI1.Controllers;
 
@@ -52,5 +53,28 @@ public class WeatherForecastController : ControllerBase
                "Current Time Zone: " + TimeZoneInfo.Local.DisplayName + "\n" +  
                "UTC Offset: " + TimeZoneInfo.Local.GetUtcOffset(DateTime.Now).ToString() + "\n" + 
                "Weather Types Available: " + string.Join(", ", Summaries);
+    }
+
+
+    [Route("SearchWeatherTypes")]
+    [HttpGet]
+    public JObject SearchWeatherTypes([FromQuery] string filter="")
+    {
+        var results = FilterWeatherTypes(filter);
+        return new JObject
+        {
+            ["SearchTerm"] = filter,
+            ["Results"] = new JArray(results)
+        };
+    }
+
+    private IEnumerable<string> FilterWeatherTypes(string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return Summaries;
+        }
+
+        return Summaries.Where(s => s.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
     }
 }
