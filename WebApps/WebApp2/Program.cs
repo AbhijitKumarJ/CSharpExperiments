@@ -1,6 +1,9 @@
 
+using System.IO;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
+using WebApp2.Data;
 
 namespace WebApp2;
 
@@ -14,15 +17,26 @@ public class Program
 
         builder.Services.AddControllers().AddNewtonsoftJson(options =>
         {
-            // Configure Newtonsoft.Json options here
             options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
             options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
         });
+
+        // Configure EF Core with SQLite file in content root
+        var dbFile = Path.Combine(builder.Environment.ContentRootPath, "app.db");
+        var connectionString = $"Data Source={dbFile}";
+        builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
         var app = builder.Build();
+
+        // Ensure database exists
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.Database.EnsureCreated();
+        }
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -30,23 +44,13 @@ public class Program
             app.MapOpenApi("/openapi/v1.json");
         }
 
-
-        app.UseStaticFiles(); // Enables serving files from wwwroot
-        // Configure Static Files Middleware for a custom directory
-        // app.UseStaticFiles(new StaticFileOptions
-        // {
-        //     FileProvider = new PhysicalFileProvider(
-        //         Path.Combine(builder.Environment.ContentRootPath, "MyStaticFiles")),
-        //     RequestPath = "/" // The URL path to access files (e.g., /StaticFiles/image.png),
-        // });
-
+        app.UseStaticFiles();
 
         app.UseRouting();
 
         //app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
 
         app.MapControllers();
 

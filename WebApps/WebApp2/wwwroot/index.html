@@ -6,6 +6,176 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Welcome to WebAPI1 Static Files</h1>
+        <h1>Todo Items (SQLite)</h1>
+        <div class="row">
+            <div style="flex:1">
+                <label><strong>Title</strong><br/><input id="title" style="width:100%"/></label>
+            </div>
+            <div style="width:140px">
+                <label><strong>Is Complete</strong><br/><input type="checkbox" id="isComplete"/></label>
+            </div>
+            <div style="width:200px">
+                <button id="createBtn">Create</button>
+                <button id="updateBtn" disabled>Update</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+        </div>
+
+        <div class="controls muted">You can click Edit to load an item into the form, or Delete to remove it.</div>
+
+        <table class="todo-list" id="todoTable">
+            <thead>
+                <tr><th style="width:60px">Id</th><th>Title</th><th style="width:120px">Complete</th><th style="width:220px">Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="status" id="status"></div>
+
+        <script>
+            const apiBase = '/api/testsqlite';
+            const titleEl = document.getElementById('title');
+            const isCompleteEl = document.getElementById('isComplete');
+            const createBtn = document.getElementById('createBtn');
+            const updateBtn = document.getElementById('updateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const todoTableBody = document.querySelector('#todoTable tbody');
+            const statusEl = document.getElementById('status');
+
+            let editingId = null;
+
+            function setStatus(msg, error=false){
+                statusEl.textContent = msg || '';
+                statusEl.style.color = error ? 'crimson' : 'green';
+                if(msg) setTimeout(()=> statusEl.textContent = '', 3000);
+            }
+
+            async function loadTodos(){
+                try{
+                    const res = await fetch(`${apiBase}/GetTodoItems`);
+                    const items = await res.json();
+                    renderList(items || []);
+                }catch(e){ setStatus('Failed to load items', true); }
+            }
+
+            function renderList(items){
+                todoTableBody.innerHTML = '';
+                if(!items.length){
+                    todoTableBody.innerHTML = '<tr><td colspan="4" class="muted">No items</td></tr>';
+                    return;
+                }
+                items.forEach(i => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${i.id}</td>
+                        <td>${escapeHtml(i.title || '')}</td>
+                        <td>${i.isComplete ? 'Yes' : 'No'}</td>
+                        <td>
+                            <button data-id="${i.id}" class="edit">Edit</button>
+                            <button data-id="${i.id}" class="del">Delete</button>
+                            <button data-id="${i.id}" class="get">Get</button>
+                        </td>`;
+                    todoTableBody.appendChild(tr);
+                });
+                attachRowHandlers();
+            }
+
+            function attachRowHandlers(){
+                document.querySelectorAll('.edit').forEach(b=> b.onclick = async e => {
+                    const id = e.target.dataset.id;
+                    await loadItem(id);
+                });
+                document.querySelectorAll('.del').forEach(b=> b.onclick = async e => {
+                    const id = e.target.dataset.id;
+                    if(!confirm('Delete item '+id+'?')) return;
+                    await deleteItem(id);
+                });
+                document.querySelectorAll('.get').forEach(b=> b.onclick = async e => {
+                    const id = e.target.dataset.id;
+                    await getItem(id);
+                });
+            }
+
+            async function loadItem(id){
+                try{
+                    const res = await fetch(`${apiBase}/GetTodoItem/${id}`);
+                    if(!res.ok){ setStatus('Item not found', true); return; }
+                    const item = await res.json();
+                    editingId = item.id;
+                    titleEl.value = item.title || '';
+                    isCompleteEl.checked = item.isComplete || false;
+                    updateBtn.disabled = false;
+                    createBtn.disabled = true;
+                    setStatus('Loaded item '+id);
+                }catch(e){ setStatus('Failed to load item', true); }
+            }
+
+            async function getItem(id){
+                try{
+                    const res = await fetch(`${apiBase}/GetTodoItem/${id}`);
+                    if(!res.ok){ setStatus('Item not found', true); return; }
+                    const item = await res.json();
+                    alert(JSON.stringify(item, null, 2));
+                }catch(e){ setStatus('Failed to get item', true); }
+            }
+
+            async function createItem(){
+                const payload = { title: titleEl.value, isComplete: isCompleteEl.checked };
+                try{
+                    const res = await fetch(`${apiBase}/CreateTodoItem`, {
+                        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+                    });
+                    if(!res.ok){ setStatus('Create failed', true); return; }
+                    const created = await res.json();
+                    setStatus('Created id '+created.id);
+                    resetForm();
+                    loadTodos();
+                }catch(e){ setStatus('Create error', true); }
+            }
+
+            async function updateItem(){
+                if(!editingId){ setStatus('No item selected', true); return; }
+                const payload = { id: editingId, title: titleEl.value, isComplete: isCompleteEl.checked };
+                try{
+                    const res = await fetch(`${apiBase}/UpdateTodoItem/${editingId}`, {
+                        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+                    });
+                    if(!res.ok){ setStatus('Update failed', true); return; }
+                    const updated = await res.json();
+                    setStatus('Updated id '+editingId);
+                    resetForm();
+                    loadTodos();
+                }catch(e){ setStatus('Update error', true); }
+            }
+
+            async function deleteItem(id){
+                try{
+                    const res = await fetch(`${apiBase}/DeleteTodoItem/${id}`);
+                    if(!res.ok){ setStatus('Delete failed', true); return; }
+                    const deleted = await res.json();
+                    setStatus('Deleted id '+id);
+                    loadTodos();
+                }catch(e){ setStatus('Delete error', true); }
+            }
+
+            function resetForm(){
+                editingId = null;
+                titleEl.value = '';
+                isCompleteEl.checked = false;
+                updateBtn.disabled = true;
+                createBtn.disabled = false;
+            }
+
+            function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+
+            createBtn.onclick = createItem;
+            updateBtn.onclick = updateItem;
+            resetBtn.onclick = resetForm;
+
+            // initial load
+            loadTodos();
+        </script>
+    </body>
+</html>
 </body>
 </html>
