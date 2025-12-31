@@ -1,38 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-        <h1>Todo Items (SQLite)</h1>
-        <div class="row">
-            <div style="flex:1">
-                <label><strong>Title</strong><br/><input id="title" style="width:100%"/></label>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Todo • WebApp2</title>
+        <style>
+            :root{
+                --bg:#0b1220; --card:#0f1724; --muted:#99a0ad; --accent:#22d3ee; --accent-2:#06b6d4; --danger:#ff6b6b; --surface:#0b1220; --glass: rgba(255,255,255,0.03);
+            }
+            html,body{height:100%}
+            body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial;color:#e6eef6;background:linear-gradient(180deg,var(--bg),#07101a);-webkit-font-smoothing:antialiased}
+            .wrap{max-width:980px;margin:28px auto;padding:18px}
+            header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+            h1{font-size:18px;margin:0;color:#fff}
+            p.lead{margin:0;color:var(--muted);font-size:13px}
+
+            .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border:1px solid rgba(255,255,255,0.04);padding:12px;border-radius:8px;box-shadow:0 6px 18px rgba(4,6,12,0.6);}
+            .form-row{display:flex;gap:12px;align-items:center}
+            input[type=text]{background:var(--card);border:1px solid rgba(255,255,255,0.04);color:#e6eef6;padding:8px 10px;border-radius:6px;outline:none;width:100%}
+            input[type=checkbox]{width:18px;height:18px}
+            .btn{background:linear-gradient(180deg,var(--accent),var(--accent-2));color:#042027;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+            .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+            .btn.warn{background:linear-gradient(180deg,var(--danger),#ff4b4b);color:#fff}
+            .controls{margin-top:8px;color:var(--muted);font-size:13px}
+
+            table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+            thead th{color:var(--muted);text-align:left;padding:8px 6px;font-size:12px}
+            tbody td{padding:10px 6px;border-top:1px solid rgba(255,255,255,0.02);vertical-align:middle}
+            tr:hover td{background:var(--glass)}
+            .actions button{margin-right:6px}
+
+            .cols{display:grid;grid-template-columns:1fr 320px;gap:12px;margin-top:16px}
+            .side{position:sticky;top:16px}
+
+            .panel{margin-top:12px;background:transparent}
+            .output{background:#07131a;border-radius:6px;padding:10px;color:#cfeff6;font-family:monospace;font-size:13px;white-space:pre-wrap;max-height:280px;overflow:auto}
+
+            footer{margin-top:18px;color:var(--muted);font-size:12px}
+
+            @media (max-width:880px){.cols{grid-template-columns:1fr}.side{position:static}}
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <header>
+                <div>
+                    <h1>Todo Items (SQLite)</h1>
+                    <p class="lead">Lightweight CRUD UI — modern dark slim look.</p>
+                </div>
+            </header>
+
+            <div class="card">
+                <div class="form-row">
+                    <div style="flex:1">
+                        <input type="text" id="title" placeholder="Enter todo title" />
+                    </div>
+                    <label style="display:flex;align-items:center;gap:8px;color:var(--muted)"><input type="checkbox" id="isComplete"/> Is Complete</label>
+                    <div style="width:220px;display:flex;gap:8px;justify-content:flex-end">
+                        <button id="createBtn" class="btn">Create</button>
+                        <button id="updateBtn" class="btn ghost" disabled>Update</button>
+                        <button id="resetBtn" class="btn ghost">Reset</button>
+                    </div>
+                </div>
+                <div class="controls">Click Edit to load item into the form. Use Weather tools on the right.</div>
+
+                <div class="cols">
+                    <div>
+                        <table id="todoTable">
+                            <thead>
+                                <tr><th style="width:60px">Id</th><th>Title</th><th style="width:90px">Complete</th><th style="width:180px">Actions</th></tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <aside class="side">
+                        <div class="card" style="padding:10px">
+                            <strong style="display:block;margin-bottom:8px;color:var(--muted)">WeatherForecast APIs</strong>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <button id="wfGet" class="btn ghost" style="flex:1">Get Forecasts</button>
+                                <button id="wfHealth" class="btn ghost">Health</button>
+                            </div>
+                            <div style="display:flex;gap:8px;margin-bottom:8px">
+                                <input id="wfFilter" type="text" placeholder="Search summary..." style="flex:1" />
+                                <button id="wfSearch" class="btn">Search</button>
+                            </div>
+                            <div class="panel">
+                                <div class="output" id="wfOutput">Weather output appears here...</div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
             </div>
-            <div style="width:140px">
-                <label><strong>Is Complete</strong><br/><input type="checkbox" id="isComplete"/></label>
-            </div>
-            <div style="width:200px">
-                <button id="createBtn">Create</button>
-                <button id="updateBtn" disabled>Update</button>
-                <button id="resetBtn">Reset</button>
-            </div>
+
+            <footer>API base: <code style="color:var(--muted)">/api/testsqlite</code> • Weather: <code style="color:var(--muted)">/api/WeatherForecast</code></footer>
         </div>
 
-        <div class="controls muted">You can click Edit to load an item into the form, or Delete to remove it.</div>
-
-        <table class="todo-list" id="todoTable">
-            <thead>
-                <tr><th style="width:60px">Id</th><th>Title</th><th style="width:120px">Complete</th><th style="width:220px">Actions</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <div class="status" id="status"></div>
-
         <script>
+            // ---------- Todo UI logic (keeps same endpoints) ----------
             const apiBase = '/api/testsqlite';
             const titleEl = document.getElementById('title');
             const isCompleteEl = document.getElementById('isComplete');
@@ -40,14 +105,11 @@
             const updateBtn = document.getElementById('updateBtn');
             const resetBtn = document.getElementById('resetBtn');
             const todoTableBody = document.querySelector('#todoTable tbody');
-            const statusEl = document.getElementById('status');
-
             let editingId = null;
 
             function setStatus(msg, error=false){
-                statusEl.textContent = msg || '';
-                statusEl.style.color = error ? 'crimson' : 'green';
-                if(msg) setTimeout(()=> statusEl.textContent = '', 3000);
+                // small transient status via console and side output
+                console.log(msg);
             }
 
             async function loadTodos(){
@@ -61,19 +123,19 @@
             function renderList(items){
                 todoTableBody.innerHTML = '';
                 if(!items.length){
-                    todoTableBody.innerHTML = '<tr><td colspan="4" class="muted">No items</td></tr>';
+                    todoTableBody.innerHTML = '<tr><td colspan="4" style="color:var(--muted)">No items</td></tr>';
                     return;
                 }
                 items.forEach(i => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>${i.id}</td>
+                        <td style="padding-left:6px">${i.id}</td>
                         <td>${escapeHtml(i.title || '')}</td>
                         <td>${i.isComplete ? 'Yes' : 'No'}</td>
-                        <td>
-                            <button data-id="${i.id}" class="edit">Edit</button>
-                            <button data-id="${i.id}" class="del">Delete</button>
-                            <button data-id="${i.id}" class="get">Get</button>
+                        <td class="actions">
+                            <button data-id="${i.id}" class="edit btn ghost">Edit</button>
+                            <button data-id="${i.id}" class="del btn ghost">Delete</button>
+                            <button data-id="${i.id}" class="get btn ghost">Get</button>
                         </td>`;
                     todoTableBody.appendChild(tr);
                 });
@@ -81,19 +143,9 @@
             }
 
             function attachRowHandlers(){
-                document.querySelectorAll('.edit').forEach(b=> b.onclick = async e => {
-                    const id = e.target.dataset.id;
-                    await loadItem(id);
-                });
-                document.querySelectorAll('.del').forEach(b=> b.onclick = async e => {
-                    const id = e.target.dataset.id;
-                    if(!confirm('Delete item '+id+'?')) return;
-                    await deleteItem(id);
-                });
-                document.querySelectorAll('.get').forEach(b=> b.onclick = async e => {
-                    const id = e.target.dataset.id;
-                    await getItem(id);
-                });
+                document.querySelectorAll('.edit').forEach(b=> b.onclick = async e => { await loadItem(e.target.dataset.id); });
+                document.querySelectorAll('.del').forEach(b=> b.onclick = async e => { if(!confirm('Delete item '+e.target.dataset.id+'?')) return; await deleteItem(e.target.dataset.id); });
+                document.querySelectorAll('.get').forEach(b=> b.onclick = async e => { await getItem(e.target.dataset.id); });
             }
 
             async function loadItem(id){
@@ -101,12 +153,7 @@
                     const res = await fetch(`${apiBase}/GetTodoItem/${id}`);
                     if(!res.ok){ setStatus('Item not found', true); return; }
                     const item = await res.json();
-                    editingId = item.id;
-                    titleEl.value = item.title || '';
-                    isCompleteEl.checked = item.isComplete || false;
-                    updateBtn.disabled = false;
-                    createBtn.disabled = true;
-                    setStatus('Loaded item '+id);
+                    editingId = item.id; titleEl.value = item.title || ''; isCompleteEl.checked = item.isComplete || false; updateBtn.disabled = false; createBtn.disabled = true;
                 }catch(e){ setStatus('Failed to load item', true); }
             }
 
@@ -114,22 +161,16 @@
                 try{
                     const res = await fetch(`${apiBase}/GetTodoItem/${id}`);
                     if(!res.ok){ setStatus('Item not found', true); return; }
-                    const item = await res.json();
-                    alert(JSON.stringify(item, null, 2));
+                    const item = await res.json(); alert(JSON.stringify(item, null, 2));
                 }catch(e){ setStatus('Failed to get item', true); }
             }
 
             async function createItem(){
                 const payload = { title: titleEl.value, isComplete: isCompleteEl.checked };
                 try{
-                    const res = await fetch(`${apiBase}/CreateTodoItem`, {
-                        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
-                    });
+                    const res = await fetch(`${apiBase}/CreateTodoItem`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
                     if(!res.ok){ setStatus('Create failed', true); return; }
-                    const created = await res.json();
-                    setStatus('Created id '+created.id);
-                    resetForm();
-                    loadTodos();
+                    await res.json(); resetForm(); loadTodos();
                 }catch(e){ setStatus('Create error', true); }
             }
 
@@ -137,14 +178,9 @@
                 if(!editingId){ setStatus('No item selected', true); return; }
                 const payload = { id: editingId, title: titleEl.value, isComplete: isCompleteEl.checked };
                 try{
-                    const res = await fetch(`${apiBase}/UpdateTodoItem/${editingId}`, {
-                        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
-                    });
+                    const res = await fetch(`${apiBase}/UpdateTodoItem/${editingId}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
                     if(!res.ok){ setStatus('Update failed', true); return; }
-                    const updated = await res.json();
-                    setStatus('Updated id '+editingId);
-                    resetForm();
-                    loadTodos();
+                    await res.json(); resetForm(); loadTodos();
                 }catch(e){ setStatus('Update error', true); }
             }
 
@@ -152,28 +188,50 @@
                 try{
                     const res = await fetch(`${apiBase}/DeleteTodoItem/${id}`);
                     if(!res.ok){ setStatus('Delete failed', true); return; }
-                    const deleted = await res.json();
-                    setStatus('Deleted id '+id);
-                    loadTodos();
+                    await res.json(); loadTodos();
                 }catch(e){ setStatus('Delete error', true); }
             }
 
-            function resetForm(){
-                editingId = null;
-                titleEl.value = '';
-                isCompleteEl.checked = false;
-                updateBtn.disabled = true;
-                createBtn.disabled = false;
-            }
+            function resetForm(){ editingId = null; titleEl.value = ''; isCompleteEl.checked = false; updateBtn.disabled = true; createBtn.disabled = false; }
+            function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'' :'&#39;'}[c])); }
 
-            function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+            createBtn.onclick = createItem; updateBtn.onclick = updateItem; resetBtn.onclick = resetForm; loadTodos();
 
-            createBtn.onclick = createItem;
-            updateBtn.onclick = updateItem;
-            resetBtn.onclick = resetForm;
+            // ---------- WeatherForecast controls ----------
+            const wfGet = document.getElementById('wfGet');
+            const wfHealth = document.getElementById('wfHealth');
+            const wfSearch = document.getElementById('wfSearch');
+            const wfFilter = document.getElementById('wfFilter');
+            const wfOutput = document.getElementById('wfOutput');
+            const wfBase = '/api/WeatherForecast';
 
-            // initial load
-            loadTodos();
+            function showWf(o){ wfOutput.textContent = typeof o === 'string' ? o : JSON.stringify(o, null, 2); }
+
+            wfGet.onclick = async () => {
+                showWf('Loading...');
+                try{
+                    const res = await fetch(`${wfBase}/GetWeatherForecast`);
+                    const data = await res.json(); showWf(data);
+                }catch(e){ showWf('Failed to fetch forecasts.'); }
+            };
+
+            wfHealth.onclick = async () => {
+                showWf('Checking...');
+                try{
+                    const res = await fetch(`${wfBase}/HealthCheck`);
+                    const text = await res.text(); showWf(text);
+                }catch(e){ showWf('Health check failed.'); }
+            };
+
+            wfSearch.onclick = async () => {
+                const q = (wfFilter.value||'').trim();
+                showWf('Searching...');
+                try{
+                    const res = await fetch(`${wfBase}/SearchWeatherTypes?filter=${encodeURIComponent(q)}`);
+                    const data = await res.json(); showWf(data);
+                }catch(e){ showWf('Search failed.'); }
+            };
+
         </script>
     </body>
 </html>

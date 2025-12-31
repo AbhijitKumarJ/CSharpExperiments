@@ -56,4 +56,6 @@ nunit-*.xml
 
 
 
-WebApps/mylogs.txt
+mylogs/*
+*.db-shm
+*.db-wal
