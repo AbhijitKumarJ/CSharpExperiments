@@ -60,3 +60,4 @@ mylogs/*
 *.db-shm
 *.db-wal
 appsettings.local.json
+appsettings.json
