@@ -1,9 +1,9 @@
 
 using System.IO;
-//using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Newtonsoft.Json;
-//using WebApp3.Data;
+using WebApp3.Data;
 
 namespace WebApp3;
 
@@ -21,10 +21,9 @@ public class Program
             options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
         });
 
-        // Configure EF Core with SQLite file in content root
-        //var dbFile = Path.Combine(builder.Environment.ContentRootPath, "app.db");
-        //var connectionString = $"Data Source={dbFile}";
-        //builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(connectionString));
+        // Configure EF Core with Postgres connection string in appsettings.json
+        builder.Services.AddDbContext<DvdRentalContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DvdRental")));
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
