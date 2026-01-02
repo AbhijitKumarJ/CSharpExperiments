@@ -2,6 +2,7 @@ using LayeredWebApp.Entity;
 using LayeredWebApp.Business;
 using LayeredWebApp.Data;
 using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace LayeredWebApp.API;
 
@@ -21,9 +22,9 @@ public class Program
             options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
         });
 
-        // Configure EF Core with Postgres connection string in appsettings.json
-        // builder.Services.AddDbContext<DvdRentalContext>(options =>
-        //     options.UseNpgsql(builder.Configuration.GetConnectionString("DvdRental")));
+        // Configure EF Core with Postgres connection string from appsettings.json
+        builder.Services.AddDbContext<LayeredWebApp.Data.DBModel.DvdRentalContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DvdRental")));
 
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
