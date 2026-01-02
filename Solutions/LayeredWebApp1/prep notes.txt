@@ -1,0 +1,15 @@
+Add below nuget packages:
+
+API layer:
+dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson --version 9.0.11
+
+
+Business Layer:
+dotnet add package Newtonsoft.Json --version 13.0.3
+
+Data Layer:
+dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.11
+dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL --version 8.0.11
+
+
+ 
