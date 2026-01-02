@@ -1,5 +1,7 @@
 using Newtonsoft.Json.Linq;
+using LayeredWebApp.Data;
 using LayeredWebApp.Entity;
+namespace LayeredWebApp.Business;
 public interface ICustomerService{
     // Define methods for customer operations
     public JObject GetCustomers(int limit);
@@ -11,11 +13,13 @@ public interface ICustomerService{
 
 public class CustomerService : ICustomerService
 {
-    public CustomerService()
+    private readonly ICustomerRepository _customerRepository;
+
+    public CustomerService(ICustomerRepository customerRepository)
     {
-        // Constructor implementation (if needed)
+        _customerRepository = customerRepository;
     }
-    
+
     public JObject GetCustomers(int limit)
     {
         // Implementation for retrieving customers
@@ -24,8 +28,9 @@ public class CustomerService : ICustomerService
 
     public JObject GetCustomer(int id)
     {
-        // Implementation for retrieving a single customer
-        return new JObject { ["Message"] = $"Retrieved customer with ID {id}." };
+        // Implementation for retrieving a single 
+        object obj= _customerRepository.GetCustomerById(id);
+        return new JObject { ["Message"] = $"Retrieved customer with ID {id}.", ["Data"]=JObject.FromObject(obj) };
     }
 
     public JObject CreateCustomer(CreateCustomerEntity entity)

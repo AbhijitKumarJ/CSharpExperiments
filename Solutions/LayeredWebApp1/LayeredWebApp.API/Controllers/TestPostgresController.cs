@@ -1,3 +1,5 @@
+using LayeredWebApp.Business;
+using LayeredWebApp.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
@@ -9,11 +11,12 @@ namespace LayeredWebApp.API.Controllers;
 public class TestPostgresController : ControllerBase
 {
     private readonly ILogger<TestPostgresController> _logger;
-    //private readonly DvdRentalContext _db;
+    private readonly ICustomerService _customerService;
 
-    public TestPostgresController(ILogger<TestPostgresController> logger)//, DvdRentalContext db)
+    public TestPostgresController(ILogger<TestPostgresController> logger, ICustomerService customerService)
     {
         _logger = logger;
+        _customerService = customerService;
     }
 
     // GET: api/TestPostgres/GetCustomers
@@ -27,7 +30,7 @@ public class TestPostgresController : ControllerBase
     [HttpGet("GetCustomer/{id:int}")]
     public async Task<IActionResult> GetCustomer(int id, CancellationToken cancellationToken)
     {
-        return Ok(new JObject { ["Message"] = $"Retrieved customer with ID {id}." });
+        return Ok(_customerService.GetCustomer(id));
     }
 
     // POST: api/TestPostgres/CreateCustomer

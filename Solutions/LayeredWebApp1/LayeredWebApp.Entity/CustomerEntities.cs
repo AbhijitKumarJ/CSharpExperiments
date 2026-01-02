@@ -1,3 +1,5 @@
+namespace LayeredWebApp.Entity;
+
 public class CreateCustomerEntity
 {
     public int StoreId { get; set; }

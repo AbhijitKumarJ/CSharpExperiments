@@ -1,4 +1,6 @@
-
+using LayeredWebApp.Entity;
+using LayeredWebApp.Business;
+using LayeredWebApp.Data;
 using Newtonsoft.Json;
 
 namespace LayeredWebApp.API;
@@ -26,6 +28,8 @@ public class Program
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+        builder.Services.AddScoped<ICustomerService, CustomerService>();
+        builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
         var app = builder.Build();
 
